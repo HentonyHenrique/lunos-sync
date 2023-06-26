@@ -74,9 +74,9 @@ object dbModule: TdbModule
   end
   object pgConnection: TFDConnection
     Params.Strings = (
-      'Port=15434'
+      'Port='
       'DriverID=PG'
-      'Password=@Office0312'
+      'Password='
       'Server=localhost'
       'User_Name=postgres'
       'Database=autosystem')
@@ -113,9 +113,9 @@ object dbModule: TdbModule
     Params.Strings = (
       'Database=syspostos'
       'User_Name=root'
-      'Server=3.93.56.52'
-      'Port=1308'
-      'Password=8I2kP%gq*Nnh'
+      'Server='
+      'Port='
+      'Password='
       'DriverID=MySQL')
     Connected = True
     LoginPrompt = False
