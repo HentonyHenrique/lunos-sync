@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2023/01/25 16:13:51.000.854,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2023/01/25 16:14:57.000.504,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmHome.dfm=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>2023/01/25 16:14:57.000.504,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmHome.pas=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2023/01/25 16:15:03.000.220,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\ProjetoH.dproj=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>2023/01/25 18:44:41.000.285,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas</Transaction>
+    <Transaction>2023/01/25 18:46:25.000.113,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit2.pas</Transaction>
+    <Transaction>2023/01/25 18:46:57.000.973,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmConfig.pas</Transaction>
+    <Transaction>2023/01/25 18:46:57.000.973,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.dfm=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmConfig.dfm</Transaction>
+    <Transaction>2023/01/25 18:47:22.000.428,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit2.dfm=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\moduleDB.dfm</Transaction>
+    <Transaction>2023/01/25 18:47:22.000.428,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit2.pas=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\moduleDB.pas</Transaction>
+    <Transaction>2023/01/27 14:32:05.000.320,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas</Transaction>
+    <Transaction>2023/01/27 14:32:42.000.551,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\unit_funcoes.pas</Transaction>
+    <Transaction>2023/01/27 14:41:49.000.209,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas</Transaction>
+    <Transaction>2023/01/27 14:42:04.000.071,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmAccess.pas</Transaction>
+    <Transaction>2023/01/27 14:42:04.000.071,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.dfm=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmAccess.dfm</Transaction>
+    <Transaction>2023/01/28 17:17:51.000.029,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\PassWord.pas</Transaction>
+    <Transaction>2023/01/28 17:21:05.000.322,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\OKCANCL2.pas</Transaction>
+    <Transaction>2023/01/28 17:21:56.000.925,=c:\program files (x86)\embarcadero\studio\21.0\ObjRepos\EN\DelphiWin32\OKCANCL2.PAS</Transaction>
+    <Transaction>2023/01/28 17:21:57.000.201,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\OKCNHLP2.pas</Transaction>
+    <Transaction>2023/01/28 17:22:06.000.189,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\PassWord.pas</Transaction>
+    <Transaction>2023/01/29 10:34:01.000.982,=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas</Transaction>
+    <Transaction>2023/01/29 10:34:09.000.337,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.dfm=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmLogin.dfm</Transaction>
+    <Transaction>2023/01/29 10:34:09.000.337,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\Unit1.pas=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\frmLogin.pas</Transaction>
+    <Transaction>2023/02/03 08:36:22.000.368,C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\SysPostos.dproj=C:\Users\Hentony\Documents\Embarcadero\Studio\Projects\ProjetoH\ProjetoH.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

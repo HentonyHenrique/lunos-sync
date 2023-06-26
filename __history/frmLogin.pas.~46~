@@ -1,0 +1,64 @@
+unit frmLogin;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, moduleDB, IniFiles, Vcl.StdCtrls,
+  Vcl.ExtCtrls, frmHome, Vcl.VirtualImage, Vcl.Imaging.pngimage, EsLabel;
+
+type
+  TfrmAuth = class(TForm)
+    Shape1: TShape;
+    editUser: TEdit;
+    editPassword: TEdit;
+    Button1: TButton;
+    lbError: TLabel;
+    Image1: TImage;
+    EsLabel1: TEsLabel;
+    procedure Button1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    ArqIni: TIniFile;
+    usuario : string;
+
+  end;
+
+var
+  frmAuth: TfrmAuth;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmAuth.Button1Click(Sender: TObject);
+begin
+  dbModule.loginQuery.Active := false;
+  dbModule.loginQuery.SQL.Clear;
+  dbModule.loginQuery.SQL.Add
+    ('select senha_login as password, user_login as user, cnpj as cnpj from auth_status where cnpj=:check and user_login='''
+    + editUser.text + '''');
+  ArqIni := TIniFile.Create('config.ini');
+  dbModule.loginQuery.Params.ParamByName('check').AsString :=
+    ArqIni.ReadString('EMPRESA', 'CNPJ', '');
+  dbModule.loginQuery.Open;
+  dbModule.loginQuery.Active := true;
+  usuario := dbModule.loginQuery.FieldByName('user').Value;
+  if editPassword.text = dbModule.loginQuery.FieldByName('password').Value then
+  begin
+    frmMenu := TfrmMenu.Create(nil);
+    frmMenu.ShowModal;
+    frmAuth.close;
+  end
+  else
+  begin
+    lbError.Caption := 'Usuário ou Senha Incorreta';
+    editUser.text := '';
+    editPassword.text := '';
+    editUser.TabOrder := 0;
+  end;
+end;
+
+end.

@@ -1,0 +1,24 @@
+Termos de Licença e Uso do Sys Postos
+
+Este é um contrato de licença e uso entre HL Developer, doravante denominado Licenciante, e o usuário final do software Sys Postos, doravante denominado Licenciado.
+
+Concessão de Licença
+O Licenciante concede ao Licenciado uma licença não exclusiva e não transferível para utilizar o software Sys Postos em um único computador. O Licenciado não pode copiar, modificar ou distribuir o software sem autorização por escrito do Licenciante.
+
+Direitos de Propriedade Intelectual
+O Licenciante detém todos os direitos de propriedade intelectual sobre o software Sys Postos, incluindo, mas não se limitando a, direitos autorais, marcas registradas e patentes.
+
+Restrições de Uso
+O Licenciado não pode utilizar o software Sys Postos de maneira que viole qualquer lei aplicável ou que infrinja os direitos de terceiros. O Licenciado também não pode utilizar o software para criar obras derivadas ou realizar engenharia reversa.
+
+Limitação de Responsabilidade
+O Licenciante não será responsável por quaisquer danos diretos, indiretos, acidentais, especiais ou consequenciais que possam surgir em relação ao uso ou incapacidade de uso do software Sys Postos.
+
+Termos de Pagamento
+O Licenciado concorda em pagar ao Licenciante todas as taxas de licença aplicáveis pelo uso do software Sys Postos.
+
+Termos de Vigência e Rescisão
+Este contrato entra em vigor na data de aceitação dos termos pelo Licenciado e permanecerá em vigor até sua rescisão. O Licenciado pode rescindir este contrato a qualquer momento, desde que pare de usar o software Sys Postos e remova todas as cópias do software de seu computador.
+
+Disposições Gerais
+Este contrato é regido pelas leis do Brasil e quaisquer disputas decorrentes deste contrato serão resolvidas por meio de arbitragem na cidade de Feira de Santana - BA em conformidade com as regras da Câmara de Arbitragem do Brasil. Se alguma cláusula deste contrato for considerada inválida, ilegal ou inexequível, as demais cláusulas permanecerão em pleno vigor e efeito. Este contrato constitui o acordo completo entre as partes e substitui todos os acordos anteriores ou contemporâneos.

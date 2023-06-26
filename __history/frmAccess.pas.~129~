@@ -1,0 +1,78 @@
+unit frmAccess;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, IniFiles, System.Actions,
+  Vcl.ActnList, Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnMan, Vcl.ToolWin,
+  Vcl.ActnCtrls, System.ImageList, Vcl.ImgList, Vcl.Imaging.pngimage,
+  Vcl.ExtCtrls, Vcl.Mask;
+
+type
+  TfrmDataAccess = class(TForm)
+    lbCNPJ: TLabel;
+    editCnpj: TMaskEdit;
+    Image1: TImage;
+    Panel1: TPanel;
+    Label2: TLabel;
+    lbErroCNPJ: TLabel;
+    editTime: TEdit;
+    Label1: TLabel;
+    Label3: TLabel;
+    procedure FormCreate(Sender: TObject);
+    procedure Image1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    ArqIni: TIniFile;
+  end;
+
+var
+  frmDataAccess: TfrmDataAccess;
+
+implementation
+
+{$R *.dfm}
+
+uses moduleDB, frmLogin;
+
+procedure TfrmDataAccess.FormCreate(Sender: TObject);
+
+begin
+  ArqIni := TIniFile.Create('config.ini');
+  editCnpj.text := ArqIni.ReadString('EMPRESA', 'CNPJ', '');
+end;
+
+procedure TfrmDataAccess.Image1Click(Sender: TObject);
+var
+  resultado: integer;
+begin
+  dbModule.InsertTimeAtualizacao.sql.clear;
+  dbModule.InsertTimeAtualizacao.sql.Add
+    ('update auth_status set tempo_atualizacao = '''+editTime.text+''' where cnpj=:cnpj');
+    ArqIni := TIniFile.Create('config.ini');
+   dbModule.InsertTimeAtualizacao.Params.ParamByName('cnpj').AsString := ArqIni.ReadString('EMPRESA', 'CNPJ', '')  ;
+  dbModule.InsertTimeAtualizacao.ExecSQL(true);
+  dbModule.checarUser.sql.clear;
+  dbModule.checarUser.sql.Add
+    ('select count(*) as resultado from auth_status where cnpj=''' +
+    editCnpj.text + ''' and user_login=''' + frmAuth.usuario +
+    ''' group by id');
+  dbModule.checarUser.Open;
+  resultado := dbModule.checarUser.FieldByName('resultado').AsInteger;
+  if resultado > 0 then
+  begin
+    ArqIni := TIniFile.Create('config.ini');
+    ArqIni.WriteString('EMPRESA', 'CNPJ', editCnpj.text);
+    showMessage('Dados atualizados com sucesso!!, abra novamente o sistema');
+    exitprocess(0);
+  end
+  else
+  begin
+    lbErroCNPJ.Caption := 'Usuário não possui acesso a esse CNPJ';
+  end;
+end;
+
+end.

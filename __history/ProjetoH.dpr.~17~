@@ -1,0 +1,20 @@
+program ProjetoH;
+
+uses
+  Vcl.Forms,
+  frmHome in 'frmHome.pas' {frmMenu},
+  frmConfig in 'frmConfig.pas' {frmSettings},
+  moduleDB in 'moduleDB.pas' {dbModule: TDataModule},
+  Vcl.Themes,
+  Vcl.Styles;
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  TStyleManager.TrySetStyle('Luna');
+  Application.CreateForm(TfrmMenu, frmMenu);
+  Application.CreateForm(TdbModule, dbModule);
+  Application.Run;
+end.

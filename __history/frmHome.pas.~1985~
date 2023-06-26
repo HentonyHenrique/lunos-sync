@@ -1,0 +1,493 @@
+unit frmHome;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.VirtualImage,
+  Vcl.BaseImageCollection, Vcl.ImageCollection, Vcl.StdCtrls, Data.DB,
+  Vcl.Grids, Vcl.DBGrids, Vcl.TitleBarCtrls, Vcl.DBCtrls, Vcl.DBCGrids,
+  Vcl.ToolWin, Vcl.ComCtrls, Vcl.Imaging.pngimage, IniFiles, DateUtils,
+  System.Generics.Collections, Firedac.Stan.Param,
+  System.UITypes;
+
+type
+  TfrmMenu = class(TForm)
+    panelLeft: TPanel;
+    timerFunction: TTimer;
+    imgAccess: TImage;
+    Image1: TImage;
+    imgConfig: TImage;
+    Image2: TImage;
+    Panel1: TPanel;
+    procedure imgAccessClick(Sender: TObject);
+    procedure imgConfigClick(Sender: TObject);
+    procedure Image2Click(Sender: TObject);
+    procedure timerFunctionTimer(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    ArqIni: TIniFile;
+    documento: Integer;
+  end;
+
+var
+  frmMenu: TfrmMenu;
+
+implementation
+
+{$R *.dfm}
+
+uses frmConfig, moduleDB, frmAccess, frmLogin;
+
+procedure TfrmMenu.Image2Click(Sender: TObject);
+var
+  proximoid: Integer;
+  limite: double;
+  hora_limite: String;
+begin
+  NullStrictConvert := false;
+  dbModule.queryTimerAtt.SQL.Clear;
+  dbModule.queryTimerAtt.SQL.Add
+    ('select tempo_atualizacao as tempo from auth_status where cnpj=''' +
+    frmAuth.cnpj_logado + ''' and user_login=''' + frmAuth.usuario + ''' ');
+  dbModule.queryTimerAtt.open;
+  begin
+    dbModule.queryCombustivel1.SQL.Clear;
+    dbModule.queryCombustivel1.SQL.Add
+      ('select grid_combustivel as grid_combustivel, limite_litros as limite_litros from combustiveis where ativo=''S'' and cnpj_posto='''
+      + frmAuth.cnpj_logado + ''' and limite_litros > 1');
+    dbModule.queryCombustivel1.Active := true;
+    dbModule.queryCombustivel1.open;
+
+    while not dbModule.queryCombustivel1.Eof do
+    begin
+      hora_limite := FormatDateTime('yyyy-mm-dd hh:nn:ss',
+        IncMinute(Now, -dbModule.queryTimerAtt.FieldByName('tempo').value));
+      var
+      grid_combustivel := dbModule.queryCombustivel1.FieldByName
+        ('grid_combustivel').value;
+      dbModule.queryCheckVendas.SQL.Clear;
+      dbModule.queryCheckVendas.SQL.Add
+        ('select encerrante as encerrante, valor as valor, quantidade as quantidade, preco_unit as preco_unit, bico as bico,'
+        + ' hora as hora,frentista as frentista,codigo as codigo from abastecimento where bico in (Select bomba from bico_bomba where bomba=abastecimento.bico and bico in (Select nome from bico where deposito in '
+        + ' (select grid from deposito where produto = ''' + grid_combustivel +
+        ''' )))and hora < :hora_limite::timestamp without time zone and quantidade <= :limite_litros or quantidade = :limite_litros');
+
+      dbModule.queryProduto.SQL.Clear;
+      dbModule.queryProduto.SQL.Add
+        ('select produto as produto from deposito where produto=''' +
+        grid_combustivel + ''' ');
+      dbModule.queryProduto.open;
+      limite := dbModule.queryCombustivel1.FieldByName('limite_litros').value;
+      dbModule.queryCheckVendas.ParamByName('limite_litros').DataType
+        := ftFloat;
+
+      dbModule.queryCheckVendas.ParamByName('hora_limite').value := hora_limite;
+      dbModule.queryCheckVendas.ParamByName('limite_litros').AsFloat :=
+        dbModule.queryCombustivel1.FieldByName('limite_litros').value;
+      dbModule.queryCheckVendas.Active := true;
+      dbModule.queryCheckVendas.open;
+
+      dbModule.queryProduto.SQL.Clear;
+      dbModule.queryProduto.SQL.Add
+        ('select produto as produto from deposito where produto=''' +
+        grid_combustivel + ''' ');
+      dbModule.queryProduto.open;
+
+      dbModule.queryCombustivel1.Next;
+
+      begin
+        with dbModule.queryCheckVendas do
+        begin
+          if not IsEmpty then
+          begin
+            try
+              while not dbModule.queryCheckVendas.Eof do
+              begin
+
+                dbModule.QueryNextVal.SQL.Clear;
+                dbModule.QueryNextVal.SQL.Add
+                  ('select nextval(''pgd_rid_seq'') as pgd_rid_seq;');
+                dbModule.QueryNextVal.Active := true;
+                dbModule.QueryNextVal.open;
+                proximoid := dbModule.QueryNextVal.FieldByName('pgd_rid_seq')
+                  .asInteger;
+                dbModule.insertMovto.SQL.Clear;
+                dbModule.insertMovto.SQL.Add
+                  ('insert into movto (valor, usuario, data, hora, turno, conta_debitar, vencto, mlid, conta_creditar, motivo, empresa, data_doc, documento) values '
+                  + ' (:valor, (select nome from usuario where pessoa in (:frentista)), (select data from caixa where fechamento is null order by data DESC limit 1), (select now()),'
+                  + ' (select turno from caixa where fechamento is null order by data DESC limit 1), '
+                  + ' (select conta from caixa where fechamento is null order by data DESC limit 1), (select data from caixa where fechamento is null order by data DESC limit 1), :proximoID, ''4.1'', ''164'', '
+                  + ' (select grid from empresa_local), (select data from caixa where fechamento is null order by data DESC limit 1), :documento);');
+
+                dbModule.insertMovto.ParamByName('valor').DataType := ftFloat;
+                dbModule.insertMovto.ParamByName('valor').value :=
+                  dbModule.queryCheckVendas.FieldByName('valor').value;
+
+                dbModule.insertMovto.ParamByName('frentista').DataType :=
+                  ftLargeInt;
+                dbModule.insertMovto.ParamByName('frentista').value :=
+                  dbModule.queryCheckVendas.FieldByName('frentista').value;
+
+                dbModule.insertMovto.ParamByName('proximoID').DataType :=
+                  ftInteger;
+                dbModule.insertMovto.ParamByName('proximoID').value :=
+                  proximoid;
+
+                dbModule.insertMovto.ParamByName('documento').DataType
+                  := ftString;
+                dbModule.insertMovto.ParamByName('documento').value := 'D1';
+
+                dbModule.InsertLancto.SQL.Clear;
+                dbModule.InsertLancto.SQL.Add
+                  ('insert into lancto (encerrante ,usuario, hora_abastec, abastecimento, vendedor,valor, preco_unit, produto, bico, quantidade, deposito, tipo_doc, mlid, data, turno, conta, hora, '
+                  + ' documento, operacao, tributacao, empresa, dia_fiscal, cst_pis, cst_cofins, natureza_receita) values (:encerrante, (select nome from usuario where pessoa in (:frentista)), :hora, :codigo, :frentista, :valor, '
+                  + ' :preco_unit ,(select produto from deposito where grid in (select deposito from bico where nome in (select bico from bico_bomba where bomba =:bico)) and empresa in (select grid from empresa_local)), '
+                  + ' (select bico from bico_bomba where bomba=:bico), :quantidade, (select grid from deposito where grid in (select deposito from bico where nome in (select bico from bico_bomba where bomba =:bico)) and empresa in '
+                  + ' (select grid from empresa_local)),  ''NFC - E'',(select mlid from movto where conta_creditar = ''4.1'' and documento =''D1'' and empresa=(Select grid from empresa_local) order by mlid desc limit 1), '
+                  + ' (select data from caixa where fechamento is null order by data DESC limit 1), '
+                  + ' (select turno from caixa where fechamento is null order by data DESC limit 1), (select conta from caixa where fechamento is null order by data DESC limit 1), '
+                  + ' (select now()), (select documento from movto  where conta_creditar = ''4.1'' and documento =''D1'' order by hora desc limit 1), ''V'', '
+                  + ' 060, (SELECT grid from empresa_local), (select data from caixa where fechamento is null order by data DESC limit 1), 04, 04, 720);');
+
+                dbModule.InsertLancto.ParamByName('valor').DataType := ftFloat;
+                dbModule.InsertLancto.ParamByName('valor').value :=
+                  dbModule.queryCheckVendas.FieldByName('valor').value;
+
+                dbModule.InsertLancto.ParamByName('frentista').DataType :=
+                  ftLargeInt;
+                dbModule.InsertLancto.ParamByName('frentista').value :=
+                  dbModule.queryCheckVendas.FieldByName('frentista').value;
+
+                dbModule.InsertLancto.ParamByName('encerrante').DataType
+                  := ftFloat;
+                dbModule.InsertLancto.ParamByName('encerrante').value :=
+                  dbModule.queryCheckVendas.FieldByName('encerrante').value;
+
+                dbModule.InsertLancto.ParamByName('quantidade').DataType
+                  := ftFloat;
+                dbModule.InsertLancto.ParamByName('quantidade').value :=
+                  dbModule.queryCheckVendas.FieldByName('quantidade').value;
+
+                dbModule.InsertLancto.ParamByName('preco_unit').DataType
+                  := ftFloat;
+                dbModule.InsertLancto.ParamByName('preco_unit').value :=
+                  dbModule.queryCheckVendas.FieldByName('preco_unit').value;
+
+                dbModule.InsertLancto.ParamByName('hora').value :=
+                  dbModule.queryCheckVendas.FieldByName('hora').value;
+
+                dbModule.InsertLancto.ParamByName('bico').DataType := ftString;
+                dbModule.InsertLancto.ParamByName('bico').value :=
+                  dbModule.queryCheckVendas.FieldByName('bico').value;
+
+                dbModule.InsertLancto.ParamByName('codigo').DataType := ftFloat;
+                dbModule.InsertLancto.ParamByName('codigo').value :=
+                  dbModule.queryCheckVendas.FieldByName('codigo').value;
+
+                dbModule.queryUpdateCombus.SQL.Clear;
+                dbModule.queryUpdateCombus.SQL.Add
+                  ('update combustiveis set limite_litros = limite_litros - :limite_litros where grid_combustivel = :grid_combustivel and cnpj_posto='''
+                  + frmAuth.cnpj_logado +
+                  ''' and limite_litros >= :limite_litros');
+                dbModule.queryUpdateCombus.ParamByName('limite_litros').DataType
+                  := ftFloat;
+                dbModule.queryUpdateCombus.ParamByName('limite_litros').AsFloat
+                  := dbModule.queryCheckVendas.FieldByName('quantidade').value;
+                dbModule.queryUpdateCombus.ParamByName('grid_combustivel')
+                  .DataType := ftInteger;
+                dbModule.queryUpdateCombus.ParamByName('grid_combustivel')
+                  .asInteger := dbModule.queryProduto.FieldByName
+                  ('produto').value;
+
+                dbModule.insertMovto.Prepare;
+                dbModule.InsertLancto.Prepare;
+                dbModule.insertMovto.ExecSQL;
+                dbModule.InsertLancto.ExecSQL;
+
+                dbModule.queryCheckVendas.Next;
+
+                dbModule.queryUpdateCombus.Prepare;
+                dbModule.queryUpdateCombus.ExecSQL;
+
+                dbModule.updateAtivo.SQL.Clear;
+                dbModule.updateAtivo.SQL.Add
+                  ('update combustiveis set ativo=''N'' where grid_combustivel = :grid_combustivel and cnpj_posto='''
+                  + frmAuth.cnpj_logado +
+                  ''' and limite_litros <= :limite_litros');
+
+                dbModule.updateAtivo.ParamByName('limite_litros').value :=
+                  dbModule.queryCheckVendas.FieldByName('quantidade').value;
+                dbModule.updateAtivo.ParamByName('grid_combustivel').asInteger
+                  := dbModule.queryProduto.FieldByName('produto').value;
+                dbModule.updateAtivo.Prepare;
+                dbModule.updateAtivo.ExecSQL;
+
+                dbModule.deleteAbastecimentos.SQL.Clear;
+                dbModule.deleteAbastecimentos.SQL.Add
+                  ('delete from abastecimento where codigo in (:codigo);');
+                dbModule.deleteAbastecimentos.ParamByName('codigo').value :=
+                  dbModule.queryCheckVendas.FieldByName('codigo').value;
+                dbModule.deleteAbastecimentos.ExecSQL(true);
+                if dbModule.updateAtivo.RowsAffected > 0 then
+                begin
+                  dbModule.insertMovto.Close;
+                  dbModule.InsertLancto.Close;
+                  dbModule.queryCheckVendas.Close;
+                  MessageDlg
+                    ('O limite definido nas configurações foi atingido para o produto: '
+                    + dbModule.queryProduto.FieldByName('produto').asString,
+                    mtInformation, [mbOK], 0);
+                end;
+              end;
+              Connection.Commit;
+            except
+              on E: Exception do
+              begin
+                MessageDlg('Ocorreu um erro: ' + E.Message, mtError, [mbOK], 0);
+              end;
+
+            end;
+
+          end;
+
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TfrmMenu.imgAccessClick(Sender: TObject);
+begin
+  frmDataAccess := TfrmDataAccess.Create(nil);
+  frmDataAccess.show;
+end;
+
+procedure TfrmMenu.imgConfigClick(Sender: TObject);
+begin
+  frmSettings := TfrmSettings.Create(nil);
+  frmSettings.show;
+end;
+
+procedure TfrmMenu.timerFunctionTimer(Sender: TObject);
+var
+  proximoid: Integer;
+  limite: double;
+  hora_limite: String;
+begin
+  NullStrictConvert := false;
+  dbModule.queryTimerAtt.SQL.Clear;
+  dbModule.queryTimerAtt.SQL.Add
+    ('select tempo_atualizacao as tempo from auth_status where cnpj=''' +
+    frmAuth.cnpj_logado + ''' and user_login=''' + frmAuth.usuario + ''' ');
+  dbModule.queryTimerAtt.open;
+  begin
+    dbModule.queryCombustivel1.SQL.Clear;
+    dbModule.queryCombustivel1.SQL.Add
+      ('select grid_combustivel as grid_combustivel, limite_litros as limite_litros from combustiveis where ativo=''S'' and cnpj_posto='''
+      + frmAuth.cnpj_logado + ''' and limite_litros > 1');
+    dbModule.queryCombustivel1.Active := true;
+    dbModule.queryCombustivel1.open;
+
+    while not dbModule.queryCombustivel1.Eof do
+    begin
+      hora_limite := FormatDateTime('yyyy-mm-dd hh:nn:ss',
+        IncMinute(Now, -dbModule.queryTimerAtt.FieldByName('tempo').value));
+      var
+      grid_combustivel := dbModule.queryCombustivel1.FieldByName
+        ('grid_combustivel').value;
+      dbModule.queryCheckVendas.SQL.Clear;
+      dbModule.queryCheckVendas.SQL.Add
+        ('select encerrante as encerrante, valor as valor, quantidade as quantidade, preco_unit as preco_unit, bico as bico,'
+        + ' hora as hora,frentista as frentista,codigo as codigo from abastecimento where bico in (Select bomba from bico_bomba where bomba=abastecimento.bico and bico in (Select nome from bico where deposito in '
+        + ' (select grid from deposito where produto = ''' + grid_combustivel +
+        ''' )))and hora < :hora_limite::timestamp without time zone and quantidade <= :limite_litros or quantidade = :limite_litros ORDER BY quantidade ASC');
+
+      dbModule.queryProduto.SQL.Clear;
+      dbModule.queryProduto.SQL.Add
+        ('select produto as produto from deposito where produto=''' +
+        grid_combustivel + ''' ');
+      dbModule.queryProduto.open;
+      limite := dbModule.queryCombustivel1.FieldByName('limite_litros').value;
+      dbModule.queryCheckVendas.ParamByName('limite_litros').DataType
+        := ftFloat;
+
+      dbModule.queryCheckVendas.ParamByName('hora_limite').value := hora_limite;
+      dbModule.queryCheckVendas.ParamByName('limite_litros').AsFloat :=
+        dbModule.queryCombustivel1.FieldByName('limite_litros').value;
+      dbModule.queryCheckVendas.Active := true;
+      dbModule.queryCheckVendas.open;
+
+      dbModule.queryProduto.SQL.Clear;
+      dbModule.queryProduto.SQL.Add
+        ('select produto as produto from deposito where produto=''' +
+        grid_combustivel + ''' ');
+      dbModule.queryProduto.open;
+
+      dbModule.queryCombustivel1.Next;
+
+      begin
+        with dbModule.queryCheckVendas do
+        begin
+          if not IsEmpty then
+          begin
+            try
+              while not dbModule.queryCheckVendas.Eof do
+              begin
+
+                dbModule.QueryNextVal.SQL.Clear;
+                dbModule.QueryNextVal.SQL.Add
+                  ('select nextval(''pgd_rid_seq'') as pgd_rid_seq;');
+                dbModule.QueryNextVal.Active := true;
+                dbModule.QueryNextVal.open;
+                proximoid := dbModule.QueryNextVal.FieldByName('pgd_rid_seq')
+                  .asInteger;
+                dbModule.insertMovto.SQL.Clear;
+                dbModule.insertMovto.SQL.Add
+                  ('insert into movto (valor, usuario, data, hora, turno, conta_debitar, vencto, mlid, conta_creditar, motivo, empresa, data_doc, documento) values '
+                  + ' (:valor, (select nome from usuario where pessoa in (:frentista)), (select data from caixa where fechamento is null order by data DESC limit 1), (select now()),'
+                  + ' (select turno from caixa where fechamento is null order by data DESC limit 1), '
+                  + ' (select conta from caixa where fechamento is null order by data DESC limit 1), (select data from caixa where fechamento is null order by data DESC limit 1), :proximoID, ''4.1'', ''164'', '
+                  + ' (select grid from empresa_local), (select data from caixa where fechamento is null order by data DESC limit 1), :documento);');
+
+                dbModule.insertMovto.ParamByName('valor').DataType := ftFloat;
+                dbModule.insertMovto.ParamByName('valor').value :=
+                  dbModule.queryCheckVendas.FieldByName('valor').value;
+
+                dbModule.insertMovto.ParamByName('frentista').DataType :=
+                  ftLargeInt;
+                dbModule.insertMovto.ParamByName('frentista').value :=
+                  dbModule.queryCheckVendas.FieldByName('frentista').value;
+
+                dbModule.insertMovto.ParamByName('proximoID').DataType :=
+                  ftInteger;
+                dbModule.insertMovto.ParamByName('proximoID').value :=
+                  proximoid;
+
+                dbModule.insertMovto.ParamByName('documento').DataType
+                  := ftString;
+                dbModule.insertMovto.ParamByName('documento').value := 'D1';
+
+                dbModule.InsertLancto.SQL.Clear;
+                dbModule.InsertLancto.SQL.Add
+                  ('insert into lancto (encerrante ,usuario, hora_abastec, abastecimento, vendedor,valor, preco_unit, produto, bico, quantidade, deposito, tipo_doc, mlid, data, turno, conta, hora, '
+                  + ' documento, operacao, tributacao, empresa, dia_fiscal, cst_pis, cst_cofins, natureza_receita) values (:encerrante, (select nome from usuario where pessoa in (:frentista)), :hora, :codigo, :frentista, :valor, '
+                  + ' :preco_unit ,(select produto from deposito where grid in (select deposito from bico where nome in (select bico from bico_bomba where bomba =:bico)) and empresa in (select grid from empresa_local)), '
+                  + ' (select bico from bico_bomba where bomba=:bico), :quantidade, (select grid from deposito where grid in (select deposito from bico where nome in (select bico from bico_bomba where bomba =:bico)) and empresa in '
+                  + ' (select grid from empresa_local)),  ''NFC - E'',(select mlid from movto where conta_creditar = ''4.1'' and documento =''D1'' and empresa=(Select grid from empresa_local) order by mlid desc limit 1), '
+                  + ' (select data from caixa where fechamento is null order by data DESC limit 1), '
+                  + ' (select turno from caixa where fechamento is null order by data DESC limit 1), (select conta from caixa where fechamento is null order by data DESC limit 1), '
+                  + ' (select now()), (select documento from movto  where conta_creditar = ''4.1'' and documento =''D1'' order by hora desc limit 1), ''V'', '
+                  + ' 060, (SELECT grid from empresa_local), (select data from caixa where fechamento is null order by data DESC limit 1), 04, 04, 720);');
+
+                dbModule.InsertLancto.ParamByName('valor').DataType := ftFloat;
+                dbModule.InsertLancto.ParamByName('valor').value :=
+                  dbModule.queryCheckVendas.FieldByName('valor').value;
+
+                dbModule.InsertLancto.ParamByName('frentista').DataType :=
+                  ftLargeInt;
+                dbModule.InsertLancto.ParamByName('frentista').value :=
+                  dbModule.queryCheckVendas.FieldByName('frentista').value;
+
+                dbModule.InsertLancto.ParamByName('encerrante').DataType
+                  := ftFloat;
+                dbModule.InsertLancto.ParamByName('encerrante').value :=
+                  dbModule.queryCheckVendas.FieldByName('encerrante').value;
+
+                dbModule.InsertLancto.ParamByName('quantidade').DataType
+                  := ftFloat;
+                dbModule.InsertLancto.ParamByName('quantidade').value :=
+                  dbModule.queryCheckVendas.FieldByName('quantidade').value;
+
+                dbModule.InsertLancto.ParamByName('preco_unit').DataType
+                  := ftFloat;
+                dbModule.InsertLancto.ParamByName('preco_unit').value :=
+                  dbModule.queryCheckVendas.FieldByName('preco_unit').value;
+
+                dbModule.InsertLancto.ParamByName('hora').value :=
+                  dbModule.queryCheckVendas.FieldByName('hora').value;
+
+                dbModule.InsertLancto.ParamByName('bico').DataType := ftString;
+                dbModule.InsertLancto.ParamByName('bico').value :=
+                  dbModule.queryCheckVendas.FieldByName('bico').value;
+
+                dbModule.InsertLancto.ParamByName('codigo').DataType := ftFloat;
+                dbModule.InsertLancto.ParamByName('codigo').value :=
+                  dbModule.queryCheckVendas.FieldByName('codigo').value;
+
+                dbModule.queryUpdateCombus.SQL.Clear;
+                dbModule.queryUpdateCombus.SQL.Add
+                  ('update combustiveis set limite_litros = limite_litros - :limite_litros where grid_combustivel = :grid_combustivel and cnpj_posto='''
+                  + frmAuth.cnpj_logado +
+                  ''' and limite_litros >= :limite_litros');
+                dbModule.queryUpdateCombus.ParamByName('limite_litros').DataType
+                  := ftFloat;
+                dbModule.queryUpdateCombus.ParamByName('limite_litros').AsFloat
+                  := dbModule.queryCheckVendas.FieldByName('quantidade').value;
+                dbModule.queryUpdateCombus.ParamByName('grid_combustivel')
+                  .DataType := ftInteger;
+                dbModule.queryUpdateCombus.ParamByName('grid_combustivel')
+                  .asInteger := dbModule.queryProduto.FieldByName
+                  ('produto').value;
+
+                dbModule.insertMovto.Prepare;
+                dbModule.InsertLancto.Prepare;
+                dbModule.insertMovto.ExecSQL;
+                dbModule.InsertLancto.ExecSQL;
+
+                dbModule.queryCheckVendas.Next;
+
+                dbModule.queryUpdateCombus.Prepare;
+                dbModule.queryUpdateCombus.ExecSQL;
+
+                dbModule.updateAtivo.SQL.Clear;
+                dbModule.updateAtivo.SQL.Add
+                  ('update combustiveis set ativo=''N'' where grid_combustivel = :grid_combustivel and cnpj_posto='''
+                  + frmAuth.cnpj_logado +
+                  ''' and limite_litros <= :limite_litros');
+
+                dbModule.updateAtivo.ParamByName('limite_litros').value :=
+                  dbModule.queryCheckVendas.FieldByName('quantidade').value;
+                dbModule.updateAtivo.ParamByName('grid_combustivel').asInteger
+                  := dbModule.queryProduto.FieldByName('produto').value;
+                dbModule.updateAtivo.Prepare;
+                dbModule.updateAtivo.ExecSQL;
+
+                dbModule.deleteAbastecimentos.SQL.Clear;
+                dbModule.deleteAbastecimentos.SQL.Add
+                  ('delete from abastecimento where codigo in (:codigo);');
+                dbModule.deleteAbastecimentos.ParamByName('codigo').value :=
+                  dbModule.queryCheckVendas.FieldByName('codigo').value;
+                dbModule.deleteAbastecimentos.ExecSQL(true);
+                if dbModule.updateAtivo.RowsAffected > 0 then
+                begin
+                  dbModule.insertMovto.Close;
+                  dbModule.InsertLancto.Close;
+                  dbModule.queryCheckVendas.Close;
+                  MessageDlg
+                    ('O limite definido nas configurações foi atingido para o produto: '
+                    + dbModule.queryProduto.FieldByName('produto').asString,
+                    mtInformation, [mbOK], 0);
+                end;
+              end;
+              Connection.Commit;
+            except
+              on E: Exception do
+              begin
+                MessageDlg('Ocorreu um erro: ' + E.Message, mtError, [mbOK], 0);
+              end;
+
+            end;
+
+          end;
+
+        end;
+      end;
+    end;
+  end;
+
+end;
+
+end.
